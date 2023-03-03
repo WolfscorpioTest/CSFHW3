@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include "Cache.h"
 
 using std::cerr;
 using std::endl;
@@ -7,9 +8,10 @@ using std::stoi;
 
 #define INVALID_USAGE_CODE 64
 
-typedef enum { write_through, write_back} Memory_Access;
-typedef enum { lru, fifo} Eviction;
+typedef enum { write_through, write_back} Write_Policy;
+typedef enum { lru, fifo} Eviction_Policy;
 
+// sizes in cache must be powers of two
 bool is_power_of_two(unsigned int value) {
   if (value == 1) {
     return true;
@@ -19,10 +21,10 @@ bool is_power_of_two(unsigned int value) {
   return is_power_of_two(value / 2);
 }
 
-bool read_args(char* argv[], int &sets, int &blocks, int &bytes_per_block, bool &write_allocate,
-               Memory_Access &memory_access, Eviction &eviction) {
+bool read_args(char* argv[], int &sets, int &blocks, int &block_size, bool &write_allocate,
+               Write_Policy &write_policy, Eviction_Policy &eviction_policy) {
   bool valid = true;
-
+  // read the three integer arguments
   try {
     sets = stoi(argv[1]);
   }
@@ -40,13 +42,14 @@ bool read_args(char* argv[], int &sets, int &blocks, int &bytes_per_block, bool 
   }
 
   try {
-    bytes_per_block = stoi(argv[3]);
+    block_size = stoi(argv[3]);
   }
   catch (...) {
     cerr << "Invalid parameter: can't parse number of bytes per block: " << argv[3]  << "." << endl;
     valid = false;
   }
 
+  // read this string argument as boolean
   if((strcmp(argv[4], "write-allocate") == 0)) {
     write_allocate = true;
   } else {
@@ -59,11 +62,12 @@ bool read_args(char* argv[], int &sets, int &blocks, int &bytes_per_block, bool 
     }
   }
 
+  // read the next two string arguments into their enum types
   if(strcmp(argv[5], "write-through") == 0) {
-    memory_access = write_through;
+    write_policy = write_through;
   } else {
     if(strcmp(argv[5],"write-back") == 0) {
-    memory_access = write_back;
+      write_policy = write_back;
     } else {
       cerr << "Invalid parameter: option for memory access " <<
            argv[5] << " does not exist. Must use write-through or write-back." << endl;
@@ -72,12 +76,12 @@ bool read_args(char* argv[], int &sets, int &blocks, int &bytes_per_block, bool 
   }
 
   if(strcmp(argv[6], "lru") == 0) {
-    eviction = lru;
+    eviction_policy = lru;
   } else {
     if(strcmp(argv[6],"fifo") == 0) {
-      eviction = fifo;
+      eviction_policy = fifo;
     } else {
-      cerr << "Invalid parameter: option for eviction " <<
+      cerr << "Invalid parameter: option for eviction_policy " <<
            argv[6] << " does not exist. Must use lru or fifo." << endl;
       valid = false;
     }
@@ -86,22 +90,24 @@ bool read_args(char* argv[], int &sets, int &blocks, int &bytes_per_block, bool 
   return valid;
 }
 
-bool validate_args(int sets, int blocks, int bytes_per_block, bool write_allocate,
-                   Memory_Access memory_access) {
+bool validate_args(int sets, int blocks, int block_size, bool write_allocate,
+                   Write_Policy write_policy) {
   bool valid = true;
   if (!is_power_of_two(sets)) {
     cerr << "Invalid parameter: number of sets: " << sets << " must be a positive power of 2." << endl;
     valid = false;
   }
   if (!is_power_of_two(blocks)) {
-    cerr << "Invalid parameter: number of blocks: " << bytes_per_block << " must be a positive power of 2." << endl;
+    cerr << "Invalid parameter: number of blocks: " << block_size << " must be a positive power of 2." << endl;
     valid = false;
   }
-  if (bytes_per_block < 4 || !is_power_of_two(bytes_per_block)) {
-    cerr << "Invalid parameter: number of sets: " << bytes_per_block << " must be a positive power of 2 at least 4." << endl;
+  // each block must be at least 4 bytes to preserve memory alignment
+  if (block_size < 4 || !is_power_of_two(block_size)) {
+    cerr << "Invalid parameter: number of sets: " << block_size << " must be a positive power of 2 at least 4." << endl;
     valid = false;
   }
-  if (!write_allocate && memory_access == write_back) {
+  // this combination results in an invalid state
+  if (!write_allocate && write_policy == write_back) {
     cerr << "Invalid parameter: no-write-allocate cannot be combined with write-back" << endl;
     valid = false;
   }
@@ -109,20 +115,32 @@ bool validate_args(int sets, int blocks, int bytes_per_block, bool write_allocat
 }
 
 int main(int argc, char* argv[]) {
+  // print out usage if wrong number of arguments is given
   if(argc != 7) {
     cerr << "Invalid usage: must be invoked with 6 arguments. e.g." << endl;
     cerr << "./csim 256 4 16 write-allocate write-back lru < sometracefile" << endl;
     return INVALID_USAGE_CODE;
   }
-  int sets, blocks, bytes_per_block;
+  // cache properties
+  int sets, blocks, block_size;
   bool write_allocate;
-  Memory_Access memory_access;
-  Eviction eviction;
-  if(!read_args(argv, sets, blocks, bytes_per_block, write_allocate, memory_access, eviction)) {
+  Write_Policy write_policy;
+  Eviction_Policy eviction_policy;
+  // read input arguments: can exit early here if parsing error happens
+  if(!read_args(argv, sets, blocks, block_size, write_allocate, write_policy, eviction_policy)) {
     return INVALID_USAGE_CODE;
   }
-  if(!validate_args(sets, blocks, bytes_per_block, write_allocate, memory_access)) {
+  // validate input arguments: can exit early if arguments are invalid
+  if(!validate_args(sets, blocks, block_size, write_allocate, write_policy)) {
     return INVALID_USAGE_CODE; // invalid usage
   }
+
+  // load from standard input
+
+  // vector of memory accesses
+  vector<Memory_Access> accesses;
+
+
+
   return 0;
 }

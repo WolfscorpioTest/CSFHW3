@@ -4,7 +4,7 @@ CFLAGS=-Wall -Wextra -pedantic -g
 .PHONY: all
 all: csim
 
-csim: main.cpp
+csim: main.cpp Cache.h
 	$(CC) $(CFLAGS) main.cpp -o csim
 
 
