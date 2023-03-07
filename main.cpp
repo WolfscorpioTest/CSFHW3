@@ -155,11 +155,16 @@ int main(int argc, char* argv[]) {
   while (std::getline(file, cache[counter])) { 
     counter++;
   }
-
+  int loads = 0;
+  int sets = 0; 
   for (int i = 0 ; i < sets*blocks ; i++){
     //method to split up string
-
-
+    std::string parts[3] = splitstring(cache[i]);
+    if(parts[i]=="l"){
+      loads++;
+    } else if (parts[i]=="s"){
+      sets++;
+    }
   }
 
 
