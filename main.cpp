@@ -2,6 +2,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 #include "Cache.h"
 
@@ -137,12 +138,23 @@ int main(int argc, char* argv[]) {
   if(!validate_args(sets, blocks, block_size, write_allocate, write_policy)) {
     return INVALID_USAGE_CODE; // invalid usage
   }
-  string s = "";
+
+
+  std::string cache [sets*blocks];
+  int counter = 0;
   std::ifstream file (argv[6]);
-  if ( file.is_open() ) { // always check whether the file is open
-    file >> s; // pipe file's content into stream
+  while (std::getline(file, cache[counter])) { 
+    counter++;
+  }
+
+  for (int i = 0 ; i < sets*blocks ; i++){
+    //method to split up string
+
     
   }
+
+
+
 
   // load from standard input
 
