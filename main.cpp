@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cstring>
+#include <fstream>
+#include <string>
+
 #include "Cache.h"
 
 using std::cerr;
@@ -133,6 +136,12 @@ int main(int argc, char* argv[]) {
   // validate input arguments: can exit early if arguments are invalid
   if(!validate_args(sets, blocks, block_size, write_allocate, write_policy)) {
     return INVALID_USAGE_CODE; // invalid usage
+  }
+  string s = "";
+  std::ifstream file (argv[6]);
+  if ( file.is_open() ) { // always check whether the file is open
+    file >> s; // pipe file's content into stream
+    
   }
 
   // load from standard input
