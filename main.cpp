@@ -117,6 +117,15 @@ bool validate_args(int sets, int blocks, int block_size, bool write_allocate,
   }
   return valid;
 }
+std::string string[] splitstring(string s){
+  std::string parts[3];
+  int counter = 0;
+  while (ss >> word) { // Extract word from the stream.
+        parts[counter] << word << endl;
+        counter++;
+  }
+  return parts;
+}
 
 int main(int argc, char* argv[]) {
   // print out usage if wrong number of arguments is given
@@ -150,7 +159,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0 ; i < sets*blocks ; i++){
     //method to split up string
 
-    
+
   }
 
 
