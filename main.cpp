@@ -6,6 +6,7 @@
 
 #include "Cache.h"
 
+
 using std::cerr;
 using std::endl;
 using std::stoi;
@@ -117,14 +118,25 @@ bool validate_args(int sets, int blocks, int block_size, bool write_allocate,
   }
   return valid;
 }
-std::string string[] splitstring(string s){
-  std::string parts[3];
-  int counter = 0;
-  while (ss >> word) { // Extract word from the stream.
-        parts[counter] << word << endl;
-        counter++;
+
+void read_traces(vector<Memory_Access> & accesses) {
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    char access_type;
+    unsigned int address;
+    std::istringstream str(line);
+    str >> access_type;
+    str >> std::hex >> address;
+
+    Operation operation(load);
+    if (access_type == 'l') {
+      operation = load;
+    } else if (access_type == 's') {
+      operation = store;
+    } // throw error if uninitialized?
+    Memory_Access memoryAccess {operation, address};
+    accesses.push_back(memoryAccess);
   }
-  return parts;
 }
 
 int main(int argc, char* argv[]) {
@@ -148,34 +160,21 @@ int main(int argc, char* argv[]) {
     return INVALID_USAGE_CODE; // invalid usage
   }
 
-
-  std::string cache [sets*blocks];
-  int counter = 0;
-  std::ifstream file (argv[6]);
-  while (std::getline(file, cache[counter])) { 
-    counter++;
-  }
-  int loads = 0;
-  int sets = 0; 
-  for (int i = 0 ; i < sets*blocks ; i++){
-    //method to split up string
-    std::string parts[3] = splitstring(cache[i]);
-    if(parts[i]=="l"){
-      loads++;
-    } else if (parts[i]=="s"){
-      sets++;
-    }
-  }
-
-
-
-
-  // load from standard input
-
   // vector of memory accesses
   vector<Memory_Access> accesses;
 
+  // load from standard input
+  read_traces(accesses);
 
+  DirectMappedCache cache1(128, 655536);
+  cache1.display_address(0xFEEDF00D);
+  DirectMappedCache cache2(1024, 1024);
+  cache2.display_address(0b00100011110111000001001110101111);
 
+  DirectMappedCache cache3(4, 64);
+  cache3.display_address(0x00FF);
+  cache3.display_address(0x0100);
+  DirectMappedCache cache4(8, 64);
+  cache4.display_address(0x0404);
   return 0;
 }
