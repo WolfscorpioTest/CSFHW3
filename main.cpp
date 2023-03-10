@@ -146,9 +146,14 @@ int main(int argc, char* argv[]) {
     cerr << "./csim 256 4 16 write-allocate write-back lru < sometracefile" << endl;
     return INVALID_USAGE_CODE;
   }
+  //amounts are LONG and unSIGNED 
+  
+
   // cache properties
   int sets, blocks, block_size;
   bool write_allocate;
+  unsigned long loads,stores, loadhits, loadmisses, storehits, storemisses, cycles;
+  
   Write_Policy write_policy;
   Eviction_Policy eviction_policy;
   // read input arguments: can exit early here if parsing error happens
