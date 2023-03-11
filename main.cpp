@@ -1,6 +1,4 @@
-#include <iostream>
 #include <cstring>
-#include <fstream>
 #include <string>
 #include <sstream>
 
@@ -13,8 +11,7 @@ using std::stoi;
 
 #define INVALID_USAGE_CODE 64
 
-typedef enum { write_through, write_back} Write_Policy;
-typedef enum { lru, fifo} Eviction_Policy;
+
 
 // sizes in cache must be powers of two
 bool is_power_of_two(unsigned int value) {
@@ -147,16 +144,16 @@ int main(int argc, char* argv[]) {
     return INVALID_USAGE_CODE;
   }
   // cache properties
-  int sets, blocks, block_size;
+  int sets, blocks_per_set, block_size;
   bool write_allocate;
   Write_Policy write_policy;
   Eviction_Policy eviction_policy;
   // read input arguments: can exit early here if parsing error happens
-  if(!read_args(argv, sets, blocks, block_size, write_allocate, write_policy, eviction_policy)) {
+  if(!read_args(argv, sets, blocks_per_set, block_size, write_allocate, write_policy, eviction_policy)) {
     return INVALID_USAGE_CODE;
   }
   // validate input arguments: can exit early if arguments are invalid
-  if(!validate_args(sets, blocks, block_size, write_allocate, write_policy)) {
+  if(!validate_args(sets, blocks_per_set, block_size, write_allocate, write_policy)) {
     return INVALID_USAGE_CODE; // invalid usage
   }
 
@@ -166,15 +163,18 @@ int main(int argc, char* argv[]) {
   // load from standard input
   read_traces(accesses);
 
-  DirectMappedCache cache1(128, 655536);
-  cache1.display_address(0xFEEDF00D);
-  DirectMappedCache cache2(1024, 1024);
-  cache2.display_address(0b00100011110111000001001110101111);
+  Cache cache(block_size, blocks_per_set, sets);
+  cache.simulate_traces(accesses);
 
-  DirectMappedCache cache3(4, 64);
-  cache3.display_address(0x00FF);
-  cache3.display_address(0x0100);
-  DirectMappedCache cache4(8, 64);
-  cache4.display_address(0x0404);
+  Cache cache1(128,1, 655536);
+  //cache1.display_address(0xFEEDF00D);
+  Cache cache2(1024, 1, 1024);
+  //cache2.display_address(0b00100011110111000001001110101111);
+
+  Cache cache3(4,1, 64);
+  //cache3.display_address(0x00FF);
+  //cache3.display_address(0x0100);
+  Cache cache4(8,1, 64);
+  //cache4.display_address(0x0404);
   return 0;
 }

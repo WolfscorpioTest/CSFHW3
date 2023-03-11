@@ -9,8 +9,8 @@ csim: main.cpp Cache.h
 
 
 assign3.zip:
-	zip assign3.zip *.cpp *.h README.txt
+	zip assign3.zip *.cpp *.h Makefile README.txt
 
 clean:
-	rm *.o csim assign3.zip
+	rm -f *.o csim assign3.zip
 
