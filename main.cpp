@@ -153,6 +153,8 @@ int main(int argc, char* argv[]) {
   int sets, blocks, block_size;
   bool write_allocate;
   unsigned long loads,stores, loadhits, loadmisses, storehits, storemisses, cycles;
+
+  // each cycle is 1 + 100 (initial call + action)
   
   Write_Policy write_policy;
   Eviction_Policy eviction_policy;
@@ -181,5 +183,15 @@ int main(int argc, char* argv[]) {
   cache3.display_address(0x0100);
   DirectMappedCache cache4(8, 64);
   cache4.display_address(0x0404);
+
+
+cout << "Total loads: " loads << endl;
+cout << "Total stores: " << stores << endl;
+cout << "Load hits: " << loadhits << endl;
+cout << "Load misses: " << loadmisses << endl;
+cout << "Store hits: " << storehits << endl;
+cout << "Store misses: " << storemisses 9439 << endl;
+cout << "Total cycles: " << cycles << endl;
+
   return 0;
 }
