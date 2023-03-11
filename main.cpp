@@ -1,4 +1,6 @@
+#include <iostream>
 #include <cstring>
+#include <fstream>
 #include <string>
 #include <sstream>
 
@@ -105,7 +107,7 @@ bool validate_args(int sets, int blocks, int block_size, bool write_allocate,
   }
   // each block must be at least 4 bytes to preserve memory alignment
   if (block_size < 4 || !is_power_of_two(block_size)) {
-    cerr << "Invalid parameter: number of sets: " << block_size << " must be a positive power of 2 at least 4." << endl;
+    cerr << "Invalid parameter: number of bytes: " << block_size << " must be a positive power of 2 at least 4." << endl;
     valid = false;
   }
   // this combination results in an invalid state
