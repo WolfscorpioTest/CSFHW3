@@ -9,6 +9,7 @@
 using std::vector;
 using std::map;
 using std::cout;
+using std::cerr;
 
 #define CACHE_ACCESS_TIME 1
 #define MEMORY_ACCESS_TIME 100
@@ -76,17 +77,6 @@ public:
                                                           writeAllocate(writeAllocate) {}
 
     void simulate_traces(vector<Memory_Access> & accesses) {
-      int cachetype;
-      if (blocks_per_set == 1 && sets > 1) {
-        cachetype = 0; //direct map
-      } else if (blocks_per_set > 1 && sets > 1) {
-        cachetype = 1; //set associative
-      } else if (blocks_per_set > 1 && sets == 1) {
-        cachetype = 2; //fully associative
-      }  else {
-        cerr << "This cache is not possible" << endl;
-        break;
-      }
       int total_loads = 0, total_stores = 0, load_hits = 0,
           load_misses = 0, store_hits = 0, store_misses = 0, total_cycles = 0;
 
@@ -101,25 +91,48 @@ public:
             if (blocks_per_set == 1) {
               entries[get_index(access.address)] = Cache_Entry {get_tag(access.address), true};
             }
-            total_cycles += MEMORY_ACCESS_TIME;
+            total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
             load_misses++;
           }
         } else if (access.op == store) {
           total_stores++;
+          if (writeAllocate) {
+            if (has_entry(access.address)) {
+              store_hits++;
+            } else {
+              store_misses++;
+              // only if we are write-allocating
+              entries[get_index(access.address)] = Cache_Entry {get_tag(access.address), true};
+              // so we don't write immediately to memory
+            }
+            total_cycles += CACHE_ACCESS_TIME;
+            if (writePolicy == write_through) {
+              total_cycles += MEMORY_ACCESS_TIME;
+            } else {
+              // mark dirty
+            }
+          } else {
+            // we write straight to memory whatever happens
+            if (has_entry(access.address)) {
+              total_cycles += CACHE_ACCESS_TIME;
+              store_hits++;
+            } else {
+              store_misses ++;
+            }
+            total_cycles += MEMORY_ACCESS_TIME;
+          }
+
           if (has_entry(access.address)) {
             if (writePolicy == write_through) {
-              // write directly from cache to memory
-              total_cycles += CACHE_ACCESS_TIME;
+              // write immediately from cache to memory
+              total_cycles += MEMORY_ACCESS_TIME;
             } else if (writePolicy == write_back) {
               // defer
             }
+            //total_cycles += CACHE_ACCESS_TIME;
             store_hits++;
           } else {
-            if (writeAllocate) {
-              entries[get_index(access.address)] = Cache_Entry {get_tag(access.address), true};
-            } else {
-              total_cycles += MEMORY_ACCESS_TIME;
-            }
+
             store_misses++;
           }
         }

@@ -162,19 +162,10 @@ int main(int argc, char* argv[]) {
   // vector of memory accesses
   vector<Memory_Access> accesses;
 
-  int cachetype;
-  if (blocks_per_set == 1 && sets > 1) {
-    cachetype = 0; //direct map
-  } else if (blocks_per_set > 1 && sets > 1) {
-    cachetype = 1; //set associative
-  } else if (blocks_per_set > 1 && sets == 1) {
-    cachetype = 2; //fully associative
-  }
-
   // load from standard input
   read_traces(accesses);
 
-  Cache cache(block_size, blocks_per_set, sets);
+  Cache cache(block_size, blocks_per_set, sets, write_policy, write_allocate);
   cache.simulate_traces(accesses);
 
   Cache cache1(128,1, 655536);
