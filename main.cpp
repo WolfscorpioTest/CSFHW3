@@ -165,7 +165,8 @@ int main(int argc, char* argv[]) {
   // load from standard input
   read_traces(accesses);
 
-  Cache cache(block_size, blocks_per_set, sets, write_policy, write_allocate);
+  Cache cache(block_size, blocks_per_set, sets,
+              write_policy, write_allocate, eviction_policy);
   cache.simulate_traces(accesses);
 
   Cache cache1(128,1, 655536);
