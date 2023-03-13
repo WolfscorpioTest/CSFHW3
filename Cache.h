@@ -5,7 +5,9 @@
 #include <map>
 #include <cmath>
 #include <iostream>
+#include <queue>
 
+using std::queue;
 using std::vector;
 using std::map;
 using std::cout;
@@ -25,7 +27,7 @@ struct Memory_Access {
 };
 
 typedef enum { write_through, write_back} Write_Policy;
-typedef enum { lru, fifo} Eviction_Policy;
+typedef enum { lru, fifo} Eviction_Policy; // Only matters when not direct mapped
 
 static Address ilog2(Address value) {
   return floor(log2(value));
@@ -89,7 +91,11 @@ public:
       }
       int total_loads = 0, total_stores = 0, load_hits = 0,
           load_misses = 0, store_hits = 0, store_misses = 0, total_cycles = 0;
-
+      
+      queue<Memory_Access> order;
+      
+      if (cachetype == 0) {
+      //direct mapped
       for (Memory_Access access : accesses) {
         if (access.op == load) {
           total_loads++;
@@ -123,6 +129,74 @@ public:
             store_misses++;
           }
         }
+      }
+      }
+      else if (cachetype == 1) { //set associative 
+
+      }
+      
+      else if (cachetype == 2) { //fully associative
+      int blocksfilled = 0;
+        if(Eviction_Policy == lru) {
+            vector<address> lruorder;
+            for(Memory_Access access : accesses) {
+              //lru set up
+              if (std::find(lruorder.begin(), lruorder.end(), access.address) != v.end()) {
+                address temp = access.address;
+                lruorder.erase(std::find(lruorder.begin(), lruorder.end(), access.address));
+                lruorder.push_back(temp);
+              }
+              else {
+                lruorder.insert(access.address);
+              }
+
+              if (access.op == load) {
+                
+              }
+              else if (access.op == store) {
+                if(blocksfilled < block_size*sets) {
+                  blocksfilled++;
+                }
+                if (blocksfilled == block_size*sets) {
+
+                }
+
+              }
+
+
+            }
+            
+
+
+        } else if (Eviction_Policy == fifo) {
+            queue<address> fifoorder
+            for(Memory_Access access : accesses) {
+              //lru set up
+              if (std::find(fifoorder.begin(), fifoorder.end(), access.address) != v.end()) {
+               //find element?
+              }
+              else {
+                fifoorder.push(access.address);
+              }
+
+              if (access.op == load) {
+                
+              }
+              else if (access.op == store) {
+                if(blocksfilled < block_size*sets) {
+                  blocksfilled++;
+                }
+                if (blocksfilled == block_size*sets) {
+                  fifoorder.pop();
+                  fifoorder.push(access);
+                }
+
+              }
+
+
+            }
+        }
+
       }
         //display_address(access.address);
       std::cout << "Total loads: " << total_loads << std::endl;
