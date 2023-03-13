@@ -76,6 +76,17 @@ public:
                                                           writeAllocate(writeAllocate) {}
 
     void simulate_traces(vector<Memory_Access> & accesses) {
+      int cachetype;
+      if (blocks_per_set == 1 && sets > 1) {
+        cachetype = 0; //direct map
+      } else if (blocks_per_set > 1 && sets > 1) {
+        cachetype = 1; //set associative
+      } else if (blocks_per_set > 1 && sets == 1) {
+        cachetype = 2; //fully associative
+      }  else {
+        cerr << "This cache is not possible" << endl;
+        break;
+      }
       int total_loads = 0, total_stores = 0, load_hits = 0,
           load_misses = 0, store_hits = 0, store_misses = 0, total_cycles = 0;
 
