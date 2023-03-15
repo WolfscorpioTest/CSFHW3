@@ -12,6 +12,7 @@ using std::vector;
 using std::map;
 using std::cout;
 using std::cerr;
+using std::pair;
 
 #define CACHE_ACCESS_TIME 1
 #define MEMORY_ACCESS_TIME 100
@@ -42,13 +43,13 @@ struct Block {
     int age;
 };
 
-static bool compare(const map<Address, Block>::iterator &a, const map<Address, Block>::iterator &b) {
-  return a->second.age < b->second.age;
+static bool compare(const pair<Address, Block> &a, const pair<Address, Block> &b) {
+  return a.second.age < b.second.age;
 }
 
 struct Set {
   map<Address, Block> blocks;
-  int count;
+  int accesses;
 };
 
 class Cache {
@@ -86,7 +87,7 @@ private:
       evict_if_necessary(address,set, total_cycles);
       // the first block will also happen to have the first block.size()
       blocks[get_tag(address)] = Block {get_tag(address), true, false, (int) blocks.size()};
-      set.count++;
+      set.accesses++;
       total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
     }
 
@@ -98,7 +99,7 @@ private:
       Set & set = sets[get_index(address)];
       // the lower the number the older the age
       set.blocks.find(get_tag(address))->second.age = (int) set.blocks.size();
-      set.count++;
+      set.accesses++;
     }
     void evict_if_necessary(Address address, Set & set, int & total_cycles) const {
       map<Address, Block> & blocks = set.blocks;
@@ -115,7 +116,6 @@ private:
           }
           blocks.clear();
         } else {
-          auto it = std::min(blocks.begin(),blocks.end(), compare);
           if (blocks_in_set == 2) {
             // do special handling so std::min is happy
             Address block = blocks[0].age < blocks[1].age ?
@@ -125,11 +125,13 @@ private:
             }
             blocks.erase(block);
           } else {
-            //cout << "evicting at " << set.count << std::endl;
-            if (it->second.dirty) {
+            // map<Address, Block> size is not 0, 1, 2
+            auto it = *std::min_element(blocks.begin(),blocks.end(), compare);
+            //cout << "evicting at " << set.accesses << std::endl;
+            if (it.second.dirty) {
               total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
             }
-            blocks.erase(it);
+            blocks.erase(it.first);
           }
         }
       }
@@ -187,7 +189,7 @@ public:
         } else if (writePolicy == write_back){
           mark_dirty(access.address); // this must be written when it gets evicted later
         }
-      } else {
+      } else { // no write allocate
         // we write straight to memory whatever happens
         if (has_entry(access.address)) {
           if (evictionPolicy == lru) {
