@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <queue>
+#include <algorithm>
 
 using std::vector;
 using std::map;
@@ -47,6 +48,7 @@ static bool compare(const map<Address, Block>::iterator &a, const map<Address, B
 
 struct Set {
   map<Address, Block> blocks;
+  int count;
 };
 
 class Cache {
@@ -79,10 +81,12 @@ private:
     }
 
     void create_entry(Address address, int & total_cycles) {
-      map<Address, Block> & blocks = sets[get_index(address)].blocks;
-      evict_if_necessary(address,blocks, total_cycles);
+      Set & set = sets[get_index(address)];
+      map<Address, Block> & blocks = set.blocks;
+      evict_if_necessary(address,set, total_cycles);
       // the first block will also happen to have the first block.size()
       blocks[get_tag(address)] = Block {get_tag(address), true, false, (int) blocks.size()};
+      set.count++;
       total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
     }
 
@@ -94,15 +98,17 @@ private:
       Set & set = sets[get_index(address)];
       // the lower the number the older the age
       set.blocks.find(get_tag(address))->second.age = (int) set.blocks.size();
+      set.count++;
     }
-    void evict_if_necessary(Address address, map<Address, Block> & blocks, int & total_cycles) const {
+    void evict_if_necessary(Address address, Set & set, int & total_cycles) const {
+      map<Address, Block> & blocks = set.blocks;
       int blocks_in_set = (int) blocks.size();
       // we don't normally have to evict if we have a direct mapped set but due to the way map works this is necessary
       if(blocks_in_set == 0) {
-        // do nothing
+        // no need to evict
       } else if (blocks_in_set == blocks_per_set) { // we have to evict in this case
         // find oldest block/furthest accesed
-        if (blocks_per_set == 1) {
+        if (blocks_in_set == 1) {
           auto it = blocks.begin(); //  evict the only element we have
           if (it->second.dirty) {
             total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
@@ -110,13 +116,21 @@ private:
           blocks.clear();
         } else {
           auto it = std::min(blocks.begin(),blocks.end(), compare);
-          if(it == blocks.end()) {
-            it = blocks.begin();
+          if (blocks_in_set == 2) {
+            // do special handling so std::min is happy
+            Address block = blocks[0].age < blocks[1].age ?
+                     blocks[0].tag : blocks[1].tag;
+            if (blocks[block].dirty) {
+              total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
+            }
+            blocks.erase(block);
+          } else {
+            //cout << "evicting at " << set.count << std::endl;
+            if (it->second.dirty) {
+              total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
+            }
+            blocks.erase(it);
           }
-          if (it->second.dirty) {
-            total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
-          }
-          blocks.erase(it);
         }
       }
     }
@@ -136,7 +150,9 @@ public:
                                                           blocks_per_set(blocks_per_set), no_sets(sets),
                                                           writePolicy(writePolicy), writeAllocate(writeAllocate),
                                                           evictionPolicy(evictionPolicy) {
-      this->sets = vector<Set>(sets, Set {});
+      // Empty map
+      map<Address, Block> empty;
+      this->sets = vector<Set>(sets, empty.get_allocator());
     }
 
     void do_load(Memory_Access access, int & total_cycles, int & total_loads, int & load_hits, int & load_misses) {
