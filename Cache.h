@@ -43,7 +43,6 @@ static Address ilog2(Address value) {
 //Block struct with address, age of access, valid, dirty bit
 struct Block {
     Address tag;
-    bool valid;
     bool dirty;
     int age;
 };
@@ -91,7 +90,7 @@ private:
       Set & set = sets[get_index(address)];
       if(!set.blocks.empty()) {
         auto block = set.blocks.find(get_tag(address));
-        return  block != set.blocks.end() && block->second.valid;
+        return  block != set.blocks.end();
       }
       return false;
     }
@@ -104,7 +103,7 @@ private:
       //checks if we need to evict anything
       evict_if_necessary(set, total_cycles);
       // the first block will also happen to have the first block.size()
-      blocks[get_tag(address)] = Block {get_tag(address), true, false, set.accesses};
+      blocks[get_tag(address)] = Block {get_tag(address), false, set.accesses};
       set.accesses++;
       total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
     }

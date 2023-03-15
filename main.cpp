@@ -177,16 +177,6 @@ int main(int argc, char* argv[]) {
   Cache cache(block_size, blocks_per_set, sets,
               write_policy, write_allocate, eviction_policy);
   cache.simulate_traces(accesses);
-
-  Cache cache1(128,1, 655536);
-  //cache1.display_address(0xFEEDF00D);
-  Cache cache2(1024, 1, 1024);
-  //cache2.display_address(0b00100011110111000001001110101111);
-
-  Cache cache3(4,1, 64);
-  //cache3.display_address(0x00FF);
-  //cache3.display_address(0x0100);
-  Cache cache4(8,1, 64);
-  //cache4.display_address(0x0404);
+  
   return 0;
 }
