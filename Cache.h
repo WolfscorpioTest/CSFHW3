@@ -23,19 +23,24 @@ typedef enum {
     load, store
 } Operation;
 
+
+//Memory Access struct for every operation and its address
 struct Memory_Access {
   Operation op;
   Address address;
 };
 
+//types of write and eviction policies
 typedef enum { write_through, write_back} Write_Policy;
 typedef enum { lru, fifo} Eviction_Policy; // Only matters when not direct mapped
 
+//returning log
 static Address ilog2(Address value) {
+  //floor rounds down
   return floor(log2(value));
 }
 
-
+//Block struct with address, age of access, valid, dirty bit
 struct Block {
     Address tag;
     bool valid;
@@ -43,35 +48,45 @@ struct Block {
     int age;
 };
 
+//comparing age of two blocks
 static bool compare(const pair<Address, Block> &a, const pair<Address, Block> &b) {
   return a.second.age < b.second.age;
 }
 
+//Set struct containing addresses, number of accesses
 struct Set {
   map<Address, Block> blocks;
   int accesses=0;
 };
 
+//Cache class 
 class Cache {
 private:
+    //basic parameters
     int block_size, blocks_per_set, no_sets;
+
+    //set up
     vector<Set> sets;
     Write_Policy writePolicy;
     bool writeAllocate;
     Eviction_Policy evictionPolicy;
 
+    //getting the offset of the address 
     Address get_offset(Address address) const {
       return address & (block_size-1);
     }
 
+    //getting the index of the address in the entire set
     Address get_index(Address address) const {
       return (address >>  ilog2(block_size)) & (no_sets - 1);
     }
 
+    //getting the tag of the address vs every address
     Address get_tag(Address address) const {
       return (address >>  ilog2(block_size * no_sets));
     }
 
+    //address exists
     bool has_entry(Address address) {
       Set & set = sets[get_index(address)];
       if(!set.blocks.empty()) {
@@ -81,27 +96,35 @@ private:
       return false;
     }
 
+    //creates a memory access that also updates the cycle
     void create_entry(Address address, int & total_cycles) {
       Set & set = sets[get_index(address)];
       map<Address, Block> & blocks = set.blocks;
-      evict_if_necessary(address,set, total_cycles);
+
+      //checks if we need to evict anything
+      evict_if_necessary(set, total_cycles);
       // the first block will also happen to have the first block.size()
       blocks[get_tag(address)] = Block {get_tag(address), true, false, set.accesses};
       set.accesses++;
       total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
     }
 
+    //marking the block at the addres as dirty
     void mark_dirty(Address address) {
       Set & set = sets[get_index(address)];
       set.blocks.find(get_tag(address))->second.dirty = true;
     }
+
+    //changing the age of an access
     void renew(Address address) {
       Set & set = sets[get_index(address)];
       // the lower the number the older the age
       set.blocks.find(get_tag(address))->second.age = set.accesses; // why does this help
       set.accesses++;
     }
-    void evict_if_necessary(Address address, Set & set, int & total_cycles) const {
+
+    //checking to see if we need to evict a block, then evicting it
+    void evict_if_necessary(Set & set, int & total_cycles) const {
       map<Address, Block> & blocks = set.blocks;
       int blocks_in_set = (int) blocks.size();
       // we don't normally have to evict if we have a direct mapped set but due to the way map works this is necessary
@@ -137,6 +160,8 @@ private:
       }
     }
 public:
+
+    //different consturctors for Cache set ups
     Cache(int block_size, int blocks_per_set, int sets) : block_size(block_size),
                                                           blocks_per_set(blocks_per_set),
                                                           no_sets(sets), writePolicy(write_through), writeAllocate(false),
@@ -204,98 +229,19 @@ public:
       }
     }
 
+
+    //runs trace simulater with vector of Memory_Access structs
     void simulate_traces(vector<Memory_Access> & accesses) {
       int total_loads = 0, total_stores = 0, load_hits = 0,
           load_misses = 0, store_hits = 0, store_misses = 0, total_cycles = 0;
-      
-      //queue<Memory_Access> order;
 
-      /*
-      if (cachetype == 0) {
-       */
-      //direct mapped
       for (Memory_Access access : accesses) {
         if (access.op == load) {
           do_load(access, total_cycles, total_loads, load_hits, load_misses);
         } else if (access.op == store) {
           do_store(access, total_cycles, total_stores, store_hits, store_misses);
-          /*
-          if (has_entry(access.address)) {
-            if (writePolicy == write_through) {
-              // write immediately from cache to memory
-              total_cycles += MEMORY_ACCESS_TIME;
-            } else if (writePolicy == write_back) {
-              // defer
-            }
-            //total_cycles += CACHE_ACCESS_TIME;
-            store_hits++;
-          } else {
-
-            store_misses++;
-          }
-          */
         }
       }
-      /*
-      }
-      else if (cachetype == 1) { //set associative 
-
-      }
-      
-      else if (cachetype == 2) { //fully associative
-      int blocksfilled = 0;
-        if(Eviction_Policy == lru) {
-            vector<address> lruorder;
-            for(Memory_Access access : accesses) {
-              //lru set up
-              if (std::find(lruorder.begin(), lruorder.end(), access.address) != v.end()) {
-                address temp = access.address;
-                lruorder.erase(std::find(lruorder.begin(), lruorder.end(), access.address));
-                lruorder.push_back(temp);
-              }
-              else {
-                lruorder.insert(access.address);
-              }
-
-              if (access.op == load) {
-                
-              }
-              else if (access.op == store) {
-                if(blocksfilled < block_size*sets) {
-                  blocksfilled++;
-                }
-                if (blocksfilled == block_size*sets) {
-
-                }
-              }
-            }
-        } else if (Eviction_Policy == fifo) {
-            queue<address> fifoorder
-            for(Memory_Access access : accesses) {
-              //lru set up
-              if (std::find(fifoorder.begin(), fifoorder.end(), access.address) != v.end()) {
-               //find element?
-              }
-              else {
-                fifoorder.push(access.address);
-              }
-
-              if (access.op == load) {
-                
-              }
-              else if (access.op == store) {
-                if(blocksfilled < block_size*sets) {
-                  blocksfilled++;
-                }
-                if (blocksfilled == block_size*sets) {
-                  fifoorder.pop();
-                  fifoorder.push(access);
-                }
-
-              }
-            }
-        }
-      }*/
         //display_address(access.address);
       std::cout << "Total loads: " << total_loads << std::endl;
       std::cout << "Total stores: " << total_stores << std::endl;
