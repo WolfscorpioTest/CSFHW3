@@ -17,6 +17,7 @@ using std::stoi;
 
 // sizes in cache must be powers of two
 bool is_power_of_two(unsigned int value) {
+  //recursively checking how if the value is a power of two, and how many if it is
   if (value == 1) {
     return true;
   } else if (value % 2 != 0 || value == 0) {
@@ -32,6 +33,7 @@ bool read_args(char* argv[], int &sets, int &blocks, int &block_size, bool &writ
   try {
     sets = stoi(argv[1]);
   }
+  // giving error if unable to parse each integer argument
   catch (...) {
     cerr << "Invalid parameter: can't parse number of sets: " << argv[1] << "." << endl;
     valid = false;
@@ -79,6 +81,8 @@ bool read_args(char* argv[], int &sets, int &blocks, int &block_size, bool &writ
    }
   }
 
+  //checking if it is has a 6th argument, if it is lru or fifo
+  //if 6th argument isn't either, there is a problem and pushes to cerr
   if(strcmp(argv[6], "lru") == 0) {
     eviction_policy = lru;
   } else {
@@ -96,6 +100,9 @@ bool read_args(char* argv[], int &sets, int &blocks, int &block_size, bool &writ
 
 bool validate_args(int sets, int blocks, int block_size, bool write_allocate,
                    Write_Policy write_policy) {
+
+  //checking each argument: is each num a power of two, are the combinations of write allocate and write policy matching
+  //set valid to false if any of them is incorrect and stop the program in main
   bool valid = true;
   if (!is_power_of_two(sets)) {
     cerr << "Invalid parameter: number of sets: " << sets << " must be a positive power of 2." << endl;
@@ -119,6 +126,7 @@ bool validate_args(int sets, int blocks, int block_size, bool write_allocate,
 }
 
 void read_traces(vector<Memory_Access> & accesses) {
+  //reading traces from cin line by line
   std::string line;
   while (std::getline(std::cin, line)) {
     char access_type;
@@ -127,6 +135,7 @@ void read_traces(vector<Memory_Access> & accesses) {
     str >> access_type;
     str >> std::hex >> address;
 
+  //checking operation type and pushing it onto memory access stack
     Operation operation(load);
     if (access_type == 'l') {
       operation = load;
