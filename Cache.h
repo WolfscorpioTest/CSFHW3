@@ -49,7 +49,7 @@ static bool compare(const pair<Address, Block> &a, const pair<Address, Block> &b
 
 struct Set {
   map<Address, Block> blocks;
-  int accesses;
+  int accesses=0;
 };
 
 class Cache {
@@ -86,7 +86,7 @@ private:
       map<Address, Block> & blocks = set.blocks;
       evict_if_necessary(address,set, total_cycles);
       // the first block will also happen to have the first block.size()
-      blocks[get_tag(address)] = Block {get_tag(address), true, false, (int) blocks.size()};
+      blocks[get_tag(address)] = Block {get_tag(address), true, false, set.accesses};
       set.accesses++;
       total_cycles += MEMORY_ACCESS_TIME/4 * block_size;
     }
@@ -98,7 +98,7 @@ private:
     void renew(Address address) {
       Set & set = sets[get_index(address)];
       // the lower the number the older the age
-      set.blocks.find(get_tag(address))->second.age = (int) set.blocks.size();
+      set.blocks.find(get_tag(address))->second.age = set.accesses; // why does this help
       set.accesses++;
     }
     void evict_if_necessary(Address address, Set & set, int & total_cycles) const {
