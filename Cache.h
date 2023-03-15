@@ -182,8 +182,12 @@ public:
       this->sets = vector<Set>(sets, empty.get_allocator());
     }
 
+    //method to load
     void do_load(Memory_Access access, int & total_cycles, int & total_loads, int & load_hits, int & load_misses) {
       total_loads++;
+
+      //check if has to evict or not
+      //check if load is a hit or miss
       if (has_entry(access.address)) {
         if (evictionPolicy == lru) {
           renew(access.address);
@@ -196,6 +200,8 @@ public:
       total_cycles += CACHE_ACCESS_TIME;
     }
 
+    //check if has to evict or not
+    //chec kif store is a hit or miss
     void do_store(Memory_Access access, int & total_cycles, int & total_stores, int & store_hits, int & store_misses) {
       total_stores++;
       if (writeAllocate) {
