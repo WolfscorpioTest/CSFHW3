@@ -154,13 +154,21 @@ Store hits: 161070
 Store misses: 36416
 Total cycles: 24318667
 
-The most load hits are from
+The most load hits are from all combinations of Fully Associative Cache followed by Set associative and ending with Directly Mapped with the least amount of hits
 
-The most store hits are from
+Store hits are pretty consistent between the different caches for their most amount of hits depending on which combinations of settings they are using with fully
+associative caches having a slight edge 
 
-The Least Amount of cycles
+The Set associative Caches have the least amount of cycles overall
 
 Hardware perspective: 
+Different types of caches have different needs for power, speed, and area
+Traditionally, directly mapped have the fastest speed and lowest power in contrast to fully associative and have set associative as middle ground between the two
+This is somewhat consistent with our experimental results 
+
+Looking at these results, the set associative cache is the best cache. It is pretty consistent with the fully associative cache for number of load hits and store
+hits while also having the least amount of cycles. This means it is both efficient in accessing data as well as saving time (electricity/power, etc)
+
 
 Contributions:
 Mac: argument parsing and validation, Directly Associative, Set Associative, Fully Associative
