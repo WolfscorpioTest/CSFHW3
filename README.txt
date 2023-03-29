@@ -4,11 +4,15 @@ Alexander Shen ashen12
 Part b: Best Cache Experiment
 The experiment should be run on a large trace file 
 We decided to choose gcc.trace 
-the size for all caches will be 256 and number of bytes per block is 16
+the size for all caches will be 4096 kb
 Each type of cache will need to be tested for combinations of 
 write-allocate write-through
 write-allocate write-back
 no-write-allocate write-through
+
+Set associative caches will have to be tested for large and small block sizes
+We will use 4 bytes and 8 bytes
+
 
 associative caches will need to be tested with lru or fifo for all combinations
 
@@ -41,61 +45,121 @@ Store misses: 38592
 Total cycles: 29004091
 
 Set Associative Cache: choosing 4 blocks per set
+Small Block Size 4 byte per block
 LRU:
-1. write-allocate write-through: 256 4 16
+1. write-allocate write-through: 256 4 4
 Total loads: 318197
 Total stores: 197486
-Load hits: 314798
-Load misses: 3399
-Store hits: 188250
-Store misses: 9236
-Total cycles: 25318283
+Load hits: 310247
+Load misses: 7950
+Store hits: 168688
+Store misses: 28798
+Total cycles: 23939083
 
 2. write-allocate write-back
 Total loads: 318197
 Total stores: 197486
-Load hits: 314798
-Load misses: 3399
-Store hits: 188250
-Store misses 9236
-Total cycles: 9344483
+Load hits: 310247
+Load misses: 7950
+Store hits: 168688
+Store misses: 28798
+Total cycles: 7187283
 
 3. no-write-allocate write-through
 Total loads: 318197
 Total stores: 197486
-Load hits: 311613
-Load misses: 6584
-Store hits: 164819
-Store misses: 32667
-Total cycles: 22865216
+Load hits: 306405
+Load misses: 11792
+Store hits: 158905
+Store misses: 38581
+Total cycles: 21404902
 
 FIFO:
-4. write-allocate write-through: 256 4 16
+4. write-allocate write-through: 256 4 4
 Total loads: 318197
 Total stores: 197486
-Load hits: 314171
-Load misses: 4026
-Store hits: 188047
-Store misses: 9439
-Total cycles: 25650283
+Load hits: 308203
+Load misses: 9994
+Store hits: 167708
+Store misses: 29778
+Total cycles: 24241483
 
 5. write-allocate write-back
 Total loads: 318197
 Total stores: 197486
-Load hits: 314171
-Load misses: 4026
-Store hits: 188047
-Store misses: 9439
-Total cycles: 9845283
+Load hits: 308203
+Load misses: 9994
+Store hits: 167708
+Store misses: 29778
+Total cycles: 7668383
 
 6. no-write-allocate write-through
 Total loads: 318197
 Total stores: 197486
-Load hits: 311017
-Load misses: 7180
-Store hits: 163705
-Store misses: 33781
-Total cycles: 23102502
+Load hits: 304826
+Load misses: 13371
+Store hits: 157404
+Store misses: 40082
+Total cycles: 21561301
+
+Large block Size
+8 bytes per block
+
+LRU: 256 2 8
+1. write-allocate write-through
+Total loads: 318197
+Total stores: 197486
+Load hits: 314571
+Load misses: 3626
+Store hits: 180110
+Store misses: 17376
+Total cycles: 24464683
+
+2. write-allocate write-back
+Total loads: 318197
+Total stores: 197486
+Load hits: 314571
+Load misses: 3626
+Store hits: 180110
+Store misses: 17376
+Total cycles: 4716283
+
+3. no-write-allocate write-through
+Total loads: 318197
+Total stores: 197486
+Load hits: 309698
+Load misses: 8499
+Store hits: 161302
+Store misses: 36184
+Total cycles: 21927899
+
+FIFO:
+4. write-allocate write-through: 256 2 8
+Total loads: 318197
+Total stores: 197486
+Load hits: 314571
+Load misses: 3626
+Store hits: 180110
+Store misses: 17376
+Total cycles: 24464683
+
+5. write-allocate write-back
+Total loads: 318197
+Total stores: 197486
+Load hits: 314571
+Load misses: 3626
+Store hits: 180110
+Store misses: 17376
+Total cycles: 4716283
+
+6. no-write-allocate write-through
+Total loads: 318197
+Total stores: 197486
+Load hits: 309698
+Load misses: 8499
+Store hits: 161302
+Store misses: 36184
+Total cycles: 21927899
 
 Fully Associative Cache:
 LRU:
